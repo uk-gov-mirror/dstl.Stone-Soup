@@ -6,6 +6,10 @@ from ...types.hypothesis import SingleDistanceHypothesis
 from ...types.prediction import (
     GaussianMeasurementPrediction, GaussianStatePrediction)
 from ...hypothesiser.probability import PDAHypothesiser
+from ...hypothesiser.distance import DistanceHypothesiser
+from ...measures import Mahalanobis
+from ...models.measurement.linear import LinearGaussian
+from ...types.array import CovarianceMatrix
 
 
 @pytest.fixture()
@@ -61,3 +65,14 @@ def probability_hypothesiser(probability_predictor, probability_updater):
     return PDAHypothesiser(probability_predictor, probability_updater,
                            clutter_spatial_density=1.2e-2,
                            prob_detect=0.9, prob_gate=0.99)
+
+
+@pytest.fixture()
+def distance_hypothesiser(probability_predictor, probability_updater):
+
+    return DistanceHypothesiser(probability_predictor, probability_updater, Mahalanobis(), 10)
+
+@pytest.fixture()
+def measurement_model():
+    return LinearGaussian(ndim_state=1, mapping=[0], noise_covar=CovarianceMatrix([[1]]))
+
