@@ -6,8 +6,8 @@ from ..base import Property
 from ..resampler import Resampler
 from ..types.numeric import Probability
 from ..types.particle import Particle
-from ..types.prediction import ParticleMeasurementPrediction
-from ..types.update import ParticleStateUpdate
+from ..types.prediction import MeasurementPrediction
+from ..types.update import Update
 
 
 class ParticleUpdater(Updater):
@@ -16,8 +16,7 @@ class ParticleUpdater(Updater):
         Perform measurement update step in the standard Kalman Filter.
         """
 
-    resampler = Property(Resampler,
-                         doc='Resampler to prevent particle degeneracy')
+    resampler: Resampler = Property(doc='Resampler to prevent particle degeneracy')
 
     def update(self, hypothesis, **kwargs):
         """Particle Filter update step
@@ -40,7 +39,7 @@ class ParticleUpdater(Updater):
 
         for particle in hypothesis.prediction.particles:
             particle.weight *= measurement_model.pdf(
-                hypothesis.measurement.state_vector, particle.state_vector,
+                hypothesis.measurement, particle,
                 **kwargs)
 
         # Normalise the weights
@@ -53,9 +52,10 @@ class ParticleUpdater(Updater):
         new_particles = self.resampler.resample(
             hypothesis.prediction.particles)
 
-        return ParticleStateUpdate(new_particles,
-                                   hypothesis,
-                                   timestamp=hypothesis.measurement.timestamp)
+        return Update.from_state(
+            hypothesis.prediction,
+            particles=new_particles, hypothesis=hypothesis,
+            timestamp=hypothesis.measurement.timestamp)
 
     @lru_cache()
     def predict_measurement(self, state_prediction, measurement_model=None,
@@ -66,12 +66,11 @@ class ParticleUpdater(Updater):
 
         new_particles = []
         for particle in state_prediction.particles:
-            new_state_vector = measurement_model.function(
-                particle.state_vector, noise=0, **kwargs)
+            new_state_vector = measurement_model.function(particle, **kwargs)
             new_particles.append(
                 Particle(new_state_vector,
                          weight=particle.weight,
                          parent=particle.parent))
 
-        return ParticleMeasurementPrediction(
-            new_particles, timestamp=state_prediction.timestamp)
+        return MeasurementPrediction.from_state(
+            state_prediction, particles=new_particles, timestamp=state_prediction.timestamp)

@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-from functools import lru_cache
-
 from .base import Predictor
+from ._utils import predict_lru_cache
 from ..types.particle import Particle
-from ..types.prediction import ParticleStatePrediction
+from ..types.prediction import Prediction
 
 
 class ParticlePredictor(Predictor):
@@ -12,7 +11,7 @@ class ParticlePredictor(Predictor):
     An implementation of a Particle Filter predictor.
     """
 
-    @lru_cache()
+    @predict_lru_cache()
     def predict(self, prior, control_input=None, timestamp=None, **kwargs):
         """Particle Filter prediction step
 
@@ -42,7 +41,8 @@ class ParticlePredictor(Predictor):
         new_particles = []
         for particle in prior.particles:
             new_state_vector = self.transition_model.function(
-                particle.state_vector,
+                particle,
+                noise=True,
                 time_interval=time_interval,
                 **kwargs)
             new_particles.append(
@@ -50,4 +50,4 @@ class ParticlePredictor(Predictor):
                          weight=particle.weight,
                          parent=particle.parent))
 
-        return ParticleStatePrediction(new_particles, timestamp=timestamp)
+        return Prediction.from_state(prior, particles=new_particles, timestamp=timestamp)
