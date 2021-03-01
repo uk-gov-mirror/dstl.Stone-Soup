@@ -37,9 +37,8 @@ class TPRTreeNN(NearestNeighbour, TPRTreeMixIn):
 @pytest.fixture(params=[
     DetectionKDTreeNN, DetectionKDTreeGNN, DetectionKDTreeGNN2D])
 def associator(request, distance_hypothesiser, probability_predictor, probability_updater, measurement_model):
-    print("RD associator")
+    '''Distance associator for each KD Tree'''
     kd_trees = [DetectionKDTreeNN, DetectionKDTreeGNN, DetectionKDTreeGNN2D]
-    print(request.param)
     if request.param in kd_trees:
         return request.param(distance_hypothesiser, probability_predictor, probability_updater)
     else:
@@ -47,12 +46,11 @@ def associator(request, distance_hypothesiser, probability_predictor, probabilit
 
 @pytest.fixture(params=[DetectionKDTreeGNN2D])
 def probability_associator(request, probability_hypothesiser, probability_predictor, probability_updater, measurement_model):
-    print("RD probability_associator")
-    print(request.param)
+    '''Probability associator for each KD Tree'''
     return request.param(probability_hypothesiser, probability_predictor, probability_updater)
 
 def test_nearest_neighbour(associator):
-    print("RD test_nearest_neighbour ", associator.__doc__)
+    '''Test method for nearest neighbour and KD tree'''
     timestamp = datetime.datetime.now()
     t1 = Track([GaussianState(np.array([[0]]), np.array([[1]]), timestamp)])
     t2 = Track([GaussianState(np.array([[3]]), np.array([[1]]), timestamp)])
@@ -75,7 +73,7 @@ def test_nearest_neighbour(associator):
 
 
 def test_missed_detection_nearest_neighbour(associator):
-    print("RD test_missed_detection_nearest_neighbour ", associator.__doc__)
+    '''Test method for nearest neighbour and KD tree'''
     timestamp = datetime.datetime.now()
     t1 = Track([GaussianState(np.array([[0]]), np.array([[1]]), timestamp)])
     t2 = Track([GaussianState(np.array([[3]]), np.array([[1]]), timestamp)])
@@ -92,6 +90,7 @@ def test_missed_detection_nearest_neighbour(associator):
 
 
 def test_probability_gnn(probability_associator):
+    '''Test method for global nearest neighbour and KD tree'''
     timestamp = datetime.datetime.now()
     t1 = Track([GaussianState(np.array([[0]]), np.array([[1]]), timestamp)])
     t2 = Track([GaussianState(np.array([[3]]), np.array([[1]]), timestamp)])
@@ -112,27 +111,4 @@ def test_probability_gnn(probability_associator):
                                for hypothesis in associations.values()
                                if hypothesis.measurement]
     assert len(associated_measurements) == len(set(associated_measurements))
-
-# def test_kdtree_nearest_neighbour():
-#
-#     # initialise the measurement model
-#     measurement_model_covariance = np.diag([0.25, 0.25])
-#     measurement_model = LinearGaussian(4, [0, 2], measurement_model_covariance)
-#
-#     # define transition model
-#     transition_model = CombinedLinearGaussianTransitionModel(
-#         [ConstantVelocity(0.05), ConstantVelocity(0.05)])
-#
-#     # define predictor
-#     predictor = KalmanPredictor(transition_model)
-#
-#     # define updater
-#     updater = KalmanUpdater(measurement_model)
-#
-#     hypothesiser = DistanceHypothesiser(predictor, updater, measure=Mahalanobis(), missed_distance=3)
-#
-#     timestamp = datetime.datetime.now()
-#     kd = DetectionKDTreeMixIn(predictor=predictor,updater=updater)
-#
-#     data_associatorKD = DetectionKDTreeNN(hypothesiser, predictor, updater, number_of_neighbours=3)
 
