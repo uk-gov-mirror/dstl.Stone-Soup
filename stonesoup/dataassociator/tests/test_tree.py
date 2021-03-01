@@ -5,14 +5,14 @@ import numpy as np
 from ..neighbour import (
     NearestNeighbour, GlobalNearestNeighbour, GNNWith2DAssignment)
 from ..tree import DetectionKDTreeMixIn, TPRTreeMixIn
-from stonesoup.predictor.kalman import KalmanPredictor
-from stonesoup.models.transition.linear import (
-    CombinedLinearGaussianTransitionModel, ConstantVelocity)
-from stonesoup.updater.kalman import KalmanUpdater
-from stonesoup.models.measurement.linear import LinearGaussian
-from stonesoup.predictor.kalman import KalmanPredictor
-from stonesoup.measures import Mahalanobis
-from stonesoup.hypothesiser.distance import DistanceHypothesiser
+# from stonesoup.predictor.kalman import KalmanPredictor
+# from stonesoup.models.transition.linear import (
+#     CombinedLinearGaussianTransitionModel, ConstantVelocity)
+# from stonesoup.updater.kalman import KalmanUpdater
+# from stonesoup.models.measurement.linear import LinearGaussian
+# from stonesoup.predictor.kalman import KalmanPredictor
+# from stonesoup.measures import Mahalanobis
+# from stonesoup.hypothesiser.distance import DistanceHypothesiser
 from stonesoup.types.track import Track
 from stonesoup.types.detection import Detection
 from stonesoup.types.state import GaussianState
@@ -22,21 +22,27 @@ class DetectionKDTreeNN(NearestNeighbour, DetectionKDTreeMixIn):
     '''DetectionKDTreeNN from NearestNeighbour and DetectionKDTreeMixIn'''
     pass
 
+
 class DetectionKDTreeGNN(GlobalNearestNeighbour, DetectionKDTreeMixIn):
     '''DetectionKDTreeGNN from GlobalNearestNeighbour and DetectionKDTreeMixIn'''
     pass
+
 
 class DetectionKDTreeGNN2D(GNNWith2DAssignment, DetectionKDTreeMixIn):
     '''DetectionKDTreeGNN2D from GNNWith2DAssignment and DetectionKDTreeMixIn'''
     pass
 
+
 class TPRTreeNN(NearestNeighbour, TPRTreeMixIn):
     '''TPRTreeNN from NearestNeighbour and TPRTreeMixIn'''
     pass
 
+
 @pytest.fixture(params=[
     DetectionKDTreeNN, DetectionKDTreeGNN, DetectionKDTreeGNN2D])
-def associator(request, distance_hypothesiser, probability_predictor, probability_updater, measurement_model):
+def associator(
+        request, distance_hypothesiser, probability_predictor,
+        probability_updater, measurement_model):
     '''Distance associator for each KD Tree'''
     kd_trees = [DetectionKDTreeNN, DetectionKDTreeGNN, DetectionKDTreeGNN2D]
     if request.param in kd_trees:
@@ -44,10 +50,14 @@ def associator(request, distance_hypothesiser, probability_predictor, probabilit
     else:
         pass
 
+
 @pytest.fixture(params=[DetectionKDTreeGNN2D])
-def probability_associator(request, probability_hypothesiser, probability_predictor, probability_updater, measurement_model):
+def probability_associator(
+        request, probability_hypothesiser, probability_predictor,
+        probability_updater, measurement_model):
     '''Probability associator for each KD Tree'''
     return request.param(probability_hypothesiser, probability_predictor, probability_updater)
+
 
 def test_nearest_neighbour(associator):
     '''Test method for nearest neighbour and KD tree'''
@@ -111,4 +121,3 @@ def test_probability_gnn(probability_associator):
                                for hypothesis in associations.values()
                                if hypothesis.measurement]
     assert len(associated_measurements) == len(set(associated_measurements))
-

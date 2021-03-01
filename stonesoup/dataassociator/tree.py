@@ -96,7 +96,9 @@ class TPRTreeMixIn(DataAssociator):
     horizon_time = Property(
         datetime.timedelta,
         doc="")
-    vel_mapping = Property(np.ndarray, default=None,
+    vel_mapping = Property(
+        np.ndarray,
+        default=None,
         doc="")
 
     def __init__(self, *args, **kwargs):

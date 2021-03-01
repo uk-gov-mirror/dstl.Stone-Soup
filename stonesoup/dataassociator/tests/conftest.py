@@ -72,7 +72,7 @@ def distance_hypothesiser(probability_predictor, probability_updater):
 
     return DistanceHypothesiser(probability_predictor, probability_updater, Mahalanobis(), 10)
 
+
 @pytest.fixture()
 def measurement_model():
     return LinearGaussian(ndim_state=1, mapping=[0], noise_covar=CovarianceMatrix([[1]]))
-
