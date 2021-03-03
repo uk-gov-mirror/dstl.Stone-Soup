@@ -10,6 +10,9 @@ from ...hypothesiser.distance import DistanceHypothesiser
 from ...measures import Mahalanobis
 from ...models.measurement.linear import LinearGaussian
 from ...types.array import CovarianceMatrix
+from ...models.transition.linear import ConstantVelocity, CombinedLinearGaussianTransitionModel
+from ...predictor.kalman import KalmanPredictor
+from ...updater.kalman import KalmanUpdater
 
 
 @pytest.fixture()
@@ -41,22 +44,25 @@ def hypothesiser():
 
 @pytest.fixture()
 def probability_predictor():
-    class TestGaussianPredictor:
-        def predict(self, prior, control_input=None, timestamp=None, **kwargs):
-            return GaussianStatePrediction(prior.state_vector + 1,
-                                           prior.covar * 2, timestamp)
-    return TestGaussianPredictor()
+    transition_model = CombinedLinearGaussianTransitionModel([ConstantVelocity(1), ConstantVelocity(1)])
+    return KalmanPredictor(transition_model)
+    # class TestGaussianPredictor:
+    #     def predict(self, prior, control_input=None, timestamp=None, **kwargs):
+    #         return GaussianStatePrediction(prior.state_vector + 1,
+    #                                        prior.covar * 2, timestamp)
+    # return TestGaussianPredictor()
 
 
 @pytest.fixture()
-def probability_updater():
-    class TestGaussianUpdater:
-        def predict_measurement(self, state_prediction, measurement_model=None,
-                                **kwargs):
-            return GaussianMeasurementPrediction(state_prediction.state_vector,
-                                                 state_prediction.covar,
-                                                 state_prediction.timestamp)
-    return TestGaussianUpdater()
+def probability_updater(measurement_model):
+    return KalmanUpdater(measurement_model)
+    # class TestGaussianUpdater:
+    #     def predict_measurement(self, state_prediction, measurement_model=None,
+    #                             **kwargs):
+    #         return GaussianMeasurementPrediction(state_prediction.state_vector,
+    #                                              state_prediction.covar,
+    #                                              state_prediction.timestamp)
+    # return TestGaussianUpdater()
 
 
 @pytest.fixture()
@@ -75,4 +81,4 @@ def distance_hypothesiser(probability_predictor, probability_updater):
 
 @pytest.fixture()
 def measurement_model():
-    return LinearGaussian(ndim_state=1, mapping=[0], noise_covar=CovarianceMatrix([[1]]))
+    return LinearGaussian(ndim_state=4, mapping=[0, 2], noise_covar=CovarianceMatrix([[1]]))
