@@ -55,13 +55,14 @@ def number_of_neighbours(request):
     return request.param
 
 
-@pytest.fixture(params=[[1, 3], [np.newaxis, np.newaxis]])
+@pytest.fixture(params=[[1, 3], [1, 3]])
 def vel_mapping(request):
     return request.param
 
 
 @pytest.fixture(params=[
-    DetectionKDTreeNN, DetectionKDTreeGNN, DetectionKDTreeGNN2D, TPRTreeNN, TPRTreeGNN, TPRTreeGNN2D])
+    DetectionKDTreeNN, DetectionKDTreeGNN, DetectionKDTreeGNN2D,
+    TPRTreeNN, TPRTreeGNN, TPRTreeGNN2D])
 def associator(
         request, distance_hypothesiser, probability_predictor,
         probability_updater, measurement_model, number_of_neighbours, vel_mapping):
@@ -117,8 +118,9 @@ def test_nearest_neighbour(associator):
     print("Testing ...")
     print(len(associations))
 
-    if isinstance(associator,DetectionKDTreeMixIn):
+    if isinstance(associator, DetectionKDTreeMixIn):
         print("numb neigbours = {}".format(associator.number_of_neighbours))
+
 
 def test_missed_detection_nearest_neighbour(associator):
     '''Test method for nearest neighbour and KD tree'''
