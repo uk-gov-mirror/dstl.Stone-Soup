@@ -2,10 +2,6 @@
 import pytest
 import numpy as np
 
-# from ...types.detection import MissedDetection
-# from ...types.hypothesis import SingleDistanceHypothesis
-# from ...types.prediction import (
-#     GaussianMeasurementPrediction, GaussianStatePrediction)
 from ...hypothesiser.probability import PDAHypothesiser
 from ...hypothesiser.distance import DistanceHypothesiser
 from ...measures import Mahalanobis
