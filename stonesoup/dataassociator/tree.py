@@ -8,7 +8,9 @@ import scipy as sp
 from scipy.spatial import KDTree
 try:
     import rtree
-except ImportError:
+
+except (ImportError, AttributeError):
+    # AttributeError raised when libspatialindex missing.
     rtree = None
 
 

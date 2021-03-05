@@ -1,6 +1,11 @@
 import datetime
 import pytest
 import numpy as np
+try:
+    import rtree
+except (ImportError, AttributeError):
+    # AttributeError raised when libspatialindex missing.
+    rtree = None
 
 from ..neighbour import (
     NearestNeighbour, GlobalNearestNeighbour, GNNWith2DAssignment)
@@ -92,6 +97,8 @@ def nn_associator(request, distance_hypothesiser, predictor,
         return request.param(distance_hypothesiser, predictor,
                              updater, number_of_neighbours=number_of_neighbours)
     else:
+        if rtree is None:
+            return pytest.skip("'rtree' module not available")
         return request.param(distance_hypothesiser, measurement_model,
                              datetime.timedelta(hours=1), vel_mapping=vel_mapping)
 
@@ -104,6 +111,8 @@ def pda_associator(request, probability_hypothesiser, predictor,
         return request.param(probability_hypothesiser, predictor,
                              updater, number_of_neighbours=number_of_neighbours)
     else:
+        if rtree is None:
+            return pytest.skip("'rtree' module not available")
         return request.param(probability_hypothesiser, measurement_model,
                              datetime.timedelta(hours=1), vel_mapping=vel_mapping)
 
