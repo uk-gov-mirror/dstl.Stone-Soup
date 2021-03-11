@@ -209,8 +209,9 @@ def test_tpr_tree_measurement_models(nn_associator, measurement_model):
     if not isinstance(nn_associator, TPRTreeNN):
         return
     timestamp = datetime.datetime.now()
-    measurement_model_nl = CartesianToBearingRange(ndim_state=4, mapping=[0, 2],
-                                                   noise_covar=CovarianceMatrix(np.diag([np.pi/180.0, 1])))
+    measurement_model_nl = CartesianToBearingRange(
+        ndim_state=4, mapping=[0, 2],
+        noise_covar=CovarianceMatrix(np.diag([np.pi/180.0, 1])))
 
     t1 = Track([GaussianState(np.array([[0, 0, 0, 0]]), np.diag([1, 0.1, 1, 0.1]), timestamp)])
     t2 = Track([GaussianState(np.array([[3, 0, 3, 0]]), np.diag([1, 0.1, 1, 0.1]), timestamp)])
