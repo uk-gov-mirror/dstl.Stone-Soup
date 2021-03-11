@@ -14,8 +14,6 @@ from ..tree import DetectionKDTreeMixIn, TPRTreeMixIn
 from stonesoup.types.track import Track
 from stonesoup.types.detection import Detection, MissedDetection
 from stonesoup.types.state import GaussianState
-from stonesoup.types.update import GaussianStateUpdate
-from stonesoup.types.hypothesis import SingleDistanceHypothesis
 
 
 class DetectionKDTreeNN(NearestNeighbour, DetectionKDTreeMixIn):
