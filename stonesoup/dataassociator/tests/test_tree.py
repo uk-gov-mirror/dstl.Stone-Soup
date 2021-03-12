@@ -22,8 +22,6 @@ from stonesoup.models.measurement.nonlinear import CartesianToBearingRange
 
 class DetectionKDTreeNN(NearestNeighbour, DetectionKDTreeMixIn):
     '''DetectionKDTreeNN from NearestNeighbour and DetectionKDTreeMixIn'''
-    print("DetectionKDTreeMixIn.max_distance")
-    print(DetectionKDTreeMixIn.max_distance.__doc__)
     pass
 
 
