@@ -281,7 +281,7 @@ def test_probability(pda_associator):
     t1 = Track([GaussianState(np.array([[0, 0, 0, 0]]), np.diag([1, 0.1, 1, 0.1]), timestamp)])
     t2 = Track([GaussianState(np.array([[3, 0, 3, 0]]), np.diag([1, 0.1, 1, 0.1]), timestamp)])
     d1 = Detection(np.array([[0, 0]]), timestamp)
-    d2 = Detection(np.array([[5, 5]]), timestamp)
+    d2 = Detection(np.array([[3, 3]]), timestamp)
 
     tracks = {t1, t2}
     detections = {d1, d2}

@@ -39,9 +39,7 @@ class NearestNeighbour(DataAssociator):
         """
 
         # Generate a set of hypotheses for each track on each detection
-        hypotheses = {
-            track: self.hypothesiser.hypothesise(track, detections, timestamp, **kwargs)
-            for track in tracks}
+        hypotheses = self.generate_hypotheses(tracks, detections, timestamp, **kwargs)
 
         # Only associate tracks with one or more hypotheses
         associate_tracks = {track
@@ -100,9 +98,7 @@ class GlobalNearestNeighbour(DataAssociator):
         """
 
         # Generate a set of hypotheses for each track on each detection
-        hypotheses = {
-            track: self.hypothesiser.hypothesise(track, detections, timestamp, **kwargs)
-            for track in tracks}
+        hypotheses = self.generate_hypotheses(tracks, detections, timestamp, **kwargs)
 
         # Link hypotheses into a set of joint_hypotheses and evaluate
         joint_hypotheses = self.enumerate_joint_hypotheses(hypotheses)
@@ -200,9 +196,7 @@ class GNNWith2DAssignment(DataAssociator):
         """
 
         # Generate a set of hypotheses for each track on each detection
-        hypotheses = {
-            track: self.hypothesiser.hypothesise(track, detections, timestamp, **kwargs)
-            for track in tracks}
+        hypotheses = self.generate_hypotheses(tracks, detections, timestamp, **kwargs)
 
         # Create dictionary for associations
         associations = {}
