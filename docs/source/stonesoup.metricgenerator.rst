@@ -6,6 +6,8 @@ Metric Generators
     stonesoup.metricgenerator.basicmetrics
     stonesoup.metricgenerator.tracktotruthmetrics
     stonesoup.metricgenerator.ospametric
+    stonesoup.metricgenerator.uncertaintymetric
+    stonesoup.metricgenerator.plotter
 
 .. automodule:: stonesoup.metricgenerator
     :no-members:

@@ -5,6 +5,7 @@ import numpy as np
 import scipy.linalg
 import pytest
 
+from stonesoup.base import Property
 from ..angle import Bearing
 from ..array import StateVector, CovarianceMatrix
 from ..numeric import Probability
@@ -165,6 +166,8 @@ def test_particlestate():
         state_vector2, weight=weight) for _ in range(num_particles//2))
 
     state = ParticleState(particles)
+    assert isinstance(state, State)
+    assert ParticleState in State.subclasses
     assert np.allclose(state.state_vector, StateVector([[50], [100]]))
     assert np.allclose(state.covar, CovarianceMatrix([[2500, 5000], [5000, 10000]]))
 
@@ -276,3 +279,56 @@ def test_state_mutable_sequence_sequence_init():
 
     del sequence[-1]
     assert sequence.timestamp == timestamp + delta * 8
+
+
+def test_state_mutable_sequence_error_message():
+    """Test that __getattr__ doesn't incorrectly identify the source of a missing attribute"""
+
+    class TestSMS(StateMutableSequence):
+        test_property: int = Property(default=3)
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.test_variable = 5
+
+        def test_method(self):
+            pass
+
+        @property
+        def complicated_attribute(self):
+            if self.test_property == 3:
+                return self.test_property
+            else:
+                raise AttributeError('Custom error message')
+
+    timestamp = datetime.datetime.now()
+    test_obj = TestSMS(states=State(state_vector=StateVector([1, 2, 3]), timestamp=timestamp))
+
+    # First check no errors on assigned vars
+    test_obj.test_method()
+    assert test_obj.test_property == 3
+    test_obj.test_property = 6
+    assert test_obj.test_property == 6
+    assert test_obj.test_variable == 5
+
+    # Now check that state variables are proxied correctly
+    assert np.array_equal(test_obj.state_vector, StateVector([1, 2, 3]))
+    assert test_obj.timestamp == timestamp
+
+    # Now check that the right error messages are raised on missing attributes
+    with pytest.raises(AttributeError, match="'TestSMS' object has no attribute 'missing_method'"):
+        test_obj.missing_method()
+
+    with pytest.raises(AttributeError, match="'TestSMS' object has no attribute "
+                                             "'missing_variable'"):
+        _ = test_obj.missing_variable
+
+    # And check custom error messages are not swallowed
+    # in the default case (test_property == 3), complicated_attribute works
+    test_obj.test_property = 3
+    assert test_obj.complicated_attribute == 3
+
+    # when test_property != 3  it raises a custom error.
+    test_obj.test_property = 5
+    with pytest.raises(AttributeError, match="Custom error message"):
+        _ = test_obj.complicated_attribute

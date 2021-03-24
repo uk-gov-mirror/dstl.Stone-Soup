@@ -158,7 +158,7 @@ data_associator = GNNWith2DAssignment(hypothesiser)
 # Create deleter - get rid of anything with a covariance trace greater than 2
 from stonesoup.deleter.error import CovarianceBasedDeleter
 covariance_limit_for_delete = 2
-deleter = CovarianceBasedDeleter(covariance_limit_for_delete)
+deleter = CovarianceBasedDeleter(covar_trace_thresh=covariance_limit_for_delete)
 
 # %%
 # Set a standard prior state and the minimum number of detections required to qualify for
@@ -203,13 +203,14 @@ tracker = MultiTargetTracker(
 groundtruth = set()
 detections = set()
 tracks = set()
+
 for time, ctracks in tracker:
     groundtruth.update(groundtruth_sim.groundtruth_paths)
     detections.update(detection_sim.detections)
     tracks.update(ctracks)
 
 from stonesoup.metricgenerator.plotter import TwoDPlotter
-plotter = TwoDPlotter(track_indices=[0, 2], gtruth_indices=[0, 2], detection_indices=[0, 1])
+plotter = TwoDPlotter(track_indices=[0, 2], gtruth_indices=[0, 2], detection_indices=[0, 2])
 fig = plotter.plot_tracks_truth_detections(tracks, groundtruth, detections).value
 
 ax = fig.axes[0]

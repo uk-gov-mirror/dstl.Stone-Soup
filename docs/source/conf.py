@@ -52,9 +52,14 @@ autodoc_default_options = {
     'members': None,
     'member-order': 'bysource',
 }
-autodoc_mock_imports = ['ffmpeg', 'moviepy', 'tensorflow', 'object_detection']
+autodoc_mock_imports = [
+    'ffmpeg', 'moviepy', 'tensorflow', 'object_detection', 'tensornets']
 
 autosectionlabel_prefix_document = True
+
+binder_branch = os.environ.get("READTHEDOCS_VERSION", "latest")
+if binder_branch == "latest":
+    binder_branch = "main"
 
 sphinx_gallery_conf = {
     'examples_dirs': ['../tutorials', '../examples', '../demos'],
@@ -64,10 +69,18 @@ sphinx_gallery_conf = {
     'abort_on_example_error': False,
     'reference_url': {'stonesoup': None},
     'remove_config_comments': True,
-    'ignore_repr_types': r'matplotlib\.(?:figure|animation)',
+    'ignore_repr_types': r'matplotlib\.(?:figure|animation|legend)',
     'within_subsection_order': FileNameSortKey,
     'matplotlib_animations': True,
-    'notebook_images': 'https://stonesoup.rtfd.io/en/latest/'
+    'notebook_images':
+        f'https://stonesoup.rtfd.io/en/{os.environ.get("READTHEDOCS_VERSION", "latest")}/',
+    'binder': {
+        'org': 'dstl',
+        'repo': 'Stone-Soup',
+        'branch': binder_branch,
+        'binderhub_url': 'https://mybinder.org',
+        'dependencies': ['requirements.txt'],
+    },
 }
 
 intersphinx_mapping = {
@@ -93,7 +106,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Stone Soup'
-copyright = '2017-2020 Stone Soup contributors'
+copyright = '2017-2021 Stone Soup contributors'
 author = 'Dstl'
 
 # The version info for the project you're documenting, acts as replacement for

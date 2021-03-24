@@ -7,9 +7,9 @@ import numpy as np
 import uuid
 
 from ..base import Property
-from .array import StateVector, StateVectors, CovarianceMatrix
+from .array import StateVector, CovarianceMatrix
 from .base import Type
-from .particle import Particle
+from .particle import Particles
 from .numeric import Probability
 
 
@@ -104,14 +104,31 @@ class StateMutableSequence(Type, abc.MutableSequence):
         else:
             return self.states.__getitem__(index)
 
-    def __getattr__(self, item):
-        if item.startswith("_"):
-            # Don't proxy special/private attributes to `state`
-            raise AttributeError(
-                "{!r} object has no attribute {!r}".format(
-                    type(self).__name__, item))
-        else:
-            return getattr(self.state, item)
+    def __getattribute__(self, name):
+        # This method is called if we try to access an attribute of self. First we try to get the
+        # attribute directly, but if that fails, we want to try getting the same attribute from
+        # self.state instead. If that, in turn,  fails we want to return the error message that
+        # would have originally been raised, rather than an error message that the State has no
+        # such attribute.
+        #
+        # An alternative mechanism using __getattr__ seems simpler (as it skips the first few lines
+        # of code, but __getattr__ has no mechanism to capture the originally raised error.
+        try:
+            # This tries first to get the attribute from self.
+            return Type.__getattribute__(self, name)
+        except AttributeError as original_error:
+            if name.startswith("_"):
+                # Don't proxy special/private attributes to `state`, just raise the original error
+                raise original_error
+            else:
+                # For non _ attributes, try to get the attribute from self.state instead of self.
+                try:
+                    my_state = Type.__getattribute__(self, 'state')
+                    return getattr(my_state, name)
+                except AttributeError:
+                    # If we get the error about 'State' not having the attribute, then we want to
+                    # raise the original error instead
+                    raise original_error
 
     def insert(self, index, value):
         return self.states.insert(index, value)
@@ -250,19 +267,28 @@ class ParticleState(Type):
     This is a particle state object which describes the state as a
     distribution of particles"""
 
-    particles: MutableSequence[Particle] = Property(doc='List of particles representing state')
+    particles: Particles = Property(doc='All particles.')
+    fixed_covar: CovarianceMatrix = Property(default=None,
+                                             doc='Fixed covariance value. Default `None`, where'
+                                                 'weighted sample covariance is then used.')
     timestamp: datetime.datetime = Property(default=None,
                                             doc="Timestamp of the state. Default None.")
 
+    def __init__(self, particles, *args, **kwargs):
+        if particles is not None and not isinstance(particles, Particles):
+            particles = Particles(particle_list=particles)
+        super().__init__(particles, *args, **kwargs)
+
     @property
     def ndim(self):
-        return self.particles[0].ndim
+        return self.particles.ndim
 
     @property
     def mean(self):
         """The state mean, equivalent to state vector"""
-        result = np.average(StateVectors([p.state_vector for p in self.particles]), axis=1,
-                            weights=[p.weight for p in self.particles])
+        result = np.average(self.particles.state_vector,
+                            axis=1,
+                            weights=self.particles.weight)
         # Convert type as may have type of weights
         return result
 
@@ -273,8 +299,9 @@ class ParticleState(Type):
 
     @property
     def covar(self):
-        cov = np.cov(StateVectors([p.state_vector for p in self.particles]),
-                     ddof=0, aweights=[p.weight for p in self.particles])
+        if self.fixed_covar is not None:
+            return self.fixed_covar
+        cov = np.cov(self.particles.state_vector, ddof=0, aweights=np.array(self.particles.weight))
         # Fix one dimensional covariances being returned with zero dimension
         return cov
 State.register(ParticleState)  # noqa: E305

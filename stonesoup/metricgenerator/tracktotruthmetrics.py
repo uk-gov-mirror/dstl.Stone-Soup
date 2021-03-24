@@ -89,12 +89,14 @@ class SIAPMetrics(MetricGenerator):
 
         metrics = [C, A, S, LT, LS, nt, nj]
 
-        timestamped_metrics = {'T C': [], 'T A': [], 'T S': []}
+        timestamped_metrics = {'time-based SIAP C': [],
+                               'time-based SIAP A': [],
+                               'time-based SIAP S': []}
         timestamps = manager.list_timestamps()
         for timestamp in timestamps:
-            timestamped_metrics['T C'].append(self.C_single_time(manager, timestamp))
-            timestamped_metrics['T A'].append(self.A_single_time(manager, timestamp))
-            timestamped_metrics['T S'].append(self.S_single_time(manager, timestamp))
+            timestamped_metrics['time-based SIAP C'].append(self.C_single_time(manager, timestamp))
+            timestamped_metrics['time-based SIAP A'].append(self.A_single_time(manager, timestamp))
+            timestamped_metrics['time-based SIAP S'].append(self.S_single_time(manager, timestamp))
         t_metrics = [TimeRangeMetric(title=key,
                                      value=value,
                                      time_range=TimeRange(min(timestamps), max(timestamps)),
@@ -107,7 +109,7 @@ class SIAPMetrics(MetricGenerator):
             t_PA = []
             for timestamp in timestamps:
                 t_PA.append(self.PA_single_time(manager, timestamp))
-            metrics.append(TimeRangeMetric(title='T PA',
+            metrics.append(TimeRangeMetric(title='time-based SIAP PA',
                                            value=t_PA,
                                            time_range=TimeRange(min(timestamps), max(timestamps)),
                                            generator=self))
@@ -118,7 +120,7 @@ class SIAPMetrics(MetricGenerator):
             t_VA = []
             for timestamp in timestamps:
                 t_VA.append(self.VA_single_time(manager, timestamp))
-            metrics.append(TimeRangeMetric(title='T VA',
+            metrics.append(TimeRangeMetric(title='time-based SIAP VA',
                                            value=t_VA,
                                            time_range=TimeRange(min(timestamps), max(timestamps)),
                                            generator=self))
@@ -132,7 +134,7 @@ class SIAPMetrics(MetricGenerator):
             t_CID = []
             for timestamp in timestamps:
                 t_CID.append(self.CID_single_time(manager, timestamp))
-            metrics.append(TimeRangeMetric(title='T CID',
+            metrics.append(TimeRangeMetric(title='time-based SIAP CID',
                                            value=t_CID,
                                            time_range=TimeRange(min(timestamps),
                                                                 max(timestamps)),
@@ -148,12 +150,12 @@ class SIAPMetrics(MetricGenerator):
                 for timestamp in timestamps:
                     t_IDC.append(self.IDC_single_time(manager, timestamp))
                     t_IDA.append(self.IDA_single_time(manager, timestamp))
-                metrics.append(TimeRangeMetric(title='T IDC',
+                metrics.append(TimeRangeMetric(title='time-based SIAP IDC',
                                                value=t_IDC,
                                                time_range=TimeRange(min(timestamps),
                                                                     max(timestamps)),
                                                generator=self))
-                metrics.append(TimeRangeMetric(title='T IDA',
+                metrics.append(TimeRangeMetric(title='time-based SIAP IDA',
                                                value=t_IDA,
                                                time_range=TimeRange(min(timestamps),
                                                                     max(timestamps)),
@@ -171,11 +173,11 @@ class SIAPMetrics(MetricGenerator):
             warnings.warn("No tracks to generate SIAP Metric", stacklevel=2)
 
     def C_single_time(self, manager, timestamp):
-        r"""SIAP metric C at a specific time
+        r"""SIAP metric C "Completeness" at a specific time
 
-        Returns an assessment of the number of targets currently being tracked compared to the
+        Returns an assessment of the number of true targets currently being tracked compared to the
         number of true targets at a specific timestamp, :math:`{t}`. The output is a percentage,
-        range 0:1, with a target score of 1
+        range :math:`0:1`, with a target score of 1
 
         .. math::
 
@@ -211,7 +213,7 @@ class SIAPMetrics(MetricGenerator):
                                 generator=self)
 
     def C_time_range(self, manager):
-        r"""SIAP metric C over time
+        r"""SIAP metric C "Completeness" over time
 
         Returns an assessment of the number of targets currently being tracked compared to the
         number of true targets over the time range of the dataset. The output is a percentage,
@@ -255,11 +257,11 @@ class SIAPMetrics(MetricGenerator):
             generator=self)
 
     def A_single_time(self, manager, timestamp):
-        r"""SIAP metric A at a specific time
+        r"""SIAP metric A "Ambiguity" at a specific time
 
         Returns an assessment of the number of tracks which are assigned to true objects against
-        the total number of tracks, at a specific timestamp, :math:`{t}`. The output is a
-        percentage, range :math:`0:\infty`, with a target score of 1
+        the total number of tracks, at a specific timestamp, :math:`{t}`. The output is unbounded
+        with a range of :math:`0:\infty`. The optimal target score for Ambiguity is 1.
 
         .. math::
 
@@ -293,10 +295,11 @@ class SIAPMetrics(MetricGenerator):
                                 generator=self)
 
     def A_time_range(self, manager):
-        r"""SIAP metric A over time
+        r"""SIAP metric A "Ambiguity" over time
 
         Returns a percentage value which assesses the number of tracks which are assigned to true
-        objects against the total number of tracks. The target score is 1.
+        objects against the total number of tracks. The output is unbounded
+        with a range of :math:`0:\infty`. The optimal target score for Ambiguity is 1.
 
         .. math::
 
@@ -334,11 +337,11 @@ class SIAPMetrics(MetricGenerator):
             generator=self)
 
     def S_single_time(self, manager, timestamp):
-        r"""SIAP metric S at a specific time
+        r"""SIAP metric S "Spuriousness" at a specific time
 
         Returns an assessment of the number of tracks that are deemed to be spurious, i.e.
         unassigned to true objects, at a specific timestamp, :math:`{t}`. The output is a
-        percentage, range :math:`0:\infty`, with a target score of 0
+        percentage, range :math:`0:1`, with a target score of 0.
 
         .. math::
 
@@ -373,10 +376,10 @@ class SIAPMetrics(MetricGenerator):
                                 generator=self)
 
     def S_time_range(self, manager):
-        r"""SIAP metric S over time
+        r"""SIAP metric S Spuriousness" over time
 
         The average percentage of tracks that are deemed to be spurious, i.e. unassigned to true
-        objects.
+        objects. The output is a percentage, range :math:`0:1`, with a target score of 0.
 
         .. math::
 
@@ -416,7 +419,8 @@ class SIAPMetrics(MetricGenerator):
         r"""SIAP metric LT over time
 
         Returns :math:`1/{R}` where :math:`{R}` is the average number of excess tracks assigned.
-        Target score is :math:`LT = \infty`
+        The output is unbounded with a range of :math:`0:\infty`, target score
+        is :math:`LT = \infty`.
 
         Parameters
         ----------
@@ -447,7 +451,8 @@ class SIAPMetrics(MetricGenerator):
     def LS(self, manager):
         r"""SIAP metric LS over time
 
-        Returns the percentage of time that true objects have been tracked across the dataset
+        Returns the percentage of time that true objects have been tracked across the
+        dataset. The output is a percentage, range :math:`0:1`, with a target score of 1.
 
         .. math::
 
@@ -491,7 +496,7 @@ class SIAPMetrics(MetricGenerator):
 
         Returns an assessment of the average assigned track positional accuracy at a specific
         timestamp, :math:`{t}`. The output is a distance measure, range :math:`0:\infty`, with a
-        target score of 0
+        target score of 0.
 
         .. math::
 
@@ -532,7 +537,8 @@ class SIAPMetrics(MetricGenerator):
     def PA(self, manager):
         r"""SIAP metric PA over time
 
-        The average positional accuracy of associated tracks.
+        The average positional accuracy of associated tracks .The output is a distance measure,
+        range :math:`0:\infty`, with a target score of 0.
 
         .. math::
 
@@ -577,7 +583,7 @@ class SIAPMetrics(MetricGenerator):
 
         Returns an assessment of the average assigned track velocity accuracy at a specific
         timestamp, :math:`{t}`. The output is a distance measure, range :math:`0:\infty`, with a
-        target score of 0
+        target score of 0.
 
         .. math::
 
@@ -619,7 +625,8 @@ class SIAPMetrics(MetricGenerator):
     def VA(self, manager):
         r"""SIAP metric VA over time
 
-        The average velocity accuracy of associated tracks.
+        The average velocity accuracy of associated tracks.The output is a distance
+        measure, range :math:`0:\infty`, with a target score of 0.
 
         .. math::
 
@@ -662,6 +669,7 @@ class SIAPMetrics(MetricGenerator):
 
     def num_tracks(self, manager):
         """Calculates the number of tracks stored in the metric manager
+
         Parameters
         ----------
         manager: MetricManager
@@ -708,7 +716,7 @@ class SIAPMetrics(MetricGenerator):
 
         Returns an assessment of the number of targets currently being tracked with assigned tracks
         with known IDs, compared to the number of targets being tracked at a specific timestamp,
-        :math:`{t}`. The output is a percentage, range 0:1, with a target score of ?
+        :math:`{t}`. The output is a percentage, range math:`0:1`, with a target score of 1.
 
         .. math::
 
@@ -747,7 +755,7 @@ class SIAPMetrics(MetricGenerator):
         r"""SIAP metric CID over time
 
         The average percentage of targets being tracked with assigned tracks with known IDs across
-        the dataset. The target score is 1.
+        the dataset. The output is a percentage, range math:`0:1`, with a target score of 1.
 
         .. math::
 
@@ -788,9 +796,10 @@ class SIAPMetrics(MetricGenerator):
     def IDC_single_time(self, manager, timestamp):
         r"""SIAP metric IDc at a specific time
 
-        Returns an assessment of the number of targets currently being tracked with the correct ID,
-        compared to the number of targets being tracked at a specific timestamp, :math:`{t}`. The
-        output is a percentage, range 0:1, with a target score of 1
+        Returns an assessment of the number of targets currently being tracked with the
+        correct ID, compared to the number of targets being tracked at a specific
+        timestamp, :math:`{t}`. The output is a percentage, range math:`0:1`, with a
+        target score of 1.
 
         .. math::
 
@@ -828,8 +837,8 @@ class SIAPMetrics(MetricGenerator):
     def IDC_time_range(self, manager):
         r"""SIAP metric IDC over time
 
-        The average percentage of targets being tracked with the correct ID across the dataset. The
-        target score is 1.
+        The average percentage of targets being tracked with the correct ID across
+        the dataset. The output is a percentage, range math:`0:1`, with a target score of 1.
 
         .. math::
 
@@ -871,7 +880,7 @@ class SIAPMetrics(MetricGenerator):
         Returns an assessment of the number of targets currently being tracked with ambiguous ID,
         compared to the number of targets being tracked at a specific timestamp, :math:`{t}`.
         An object’s ID is considered ambiguous if it has multiple tracks with correct and incorrect
-        IDs.The output is a percentage, range 0:1, with a target score of 1
+        IDs. The output is a percentage, range math:`0:1`, with a target score of 0.
 
         .. math::
 
@@ -912,8 +921,8 @@ class SIAPMetrics(MetricGenerator):
     def IDA_time_range(self, manager):
         r"""SIAP metric IDC over time
 
-        The average percentage of targets being tracked with ambiguous ID across the dataset. The
-        target score is 1.
+        The average percentage of targets being tracked with ambiguous ID across the dataset.
+        The output is a percentage, range math:`0:1`, with a target score of 0.
 
         .. math::
 
